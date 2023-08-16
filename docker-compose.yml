@@ -13,4 +13,5 @@ services:
     env_file:
       - ./.env
     volumes:
-      - ./:/app
+      - ./index.js:/app/index.js
+    # - ./:/app
