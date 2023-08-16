@@ -12,3 +12,30 @@
   PORT=3005
   ROOT_PATH_TEA=/app
 ```
+
+```
+minikube addons enable registry
+kubectl api-resources
+
+minikube dashboard
+minikube start
+
+kubectl apply -f kuber.yml
+kubectl delete -f k8s.yml
+kubectl get pods
+
+minikube service list
+minikube image ls
+
+
+docker scout quickview
+docker build -t nami/teafiles-service .
+docker-compose up --build
+
+minikube image load nami/teafiles-service
+
+kubectl get services
+kubectl get nodes -o wide
+minikube service teafiles-service
+kubectl get pods
+```
