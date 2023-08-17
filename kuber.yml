@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: teafiles-service-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: teafiles-service
@@ -12,21 +12,30 @@ spec:
       labels:
         app: teafiles-service
     spec:
+      # initContainers:
+      #   - name: init-rsync
+      #     image: alpine:latest
+      #     command: ["sh", "-c"]
+      #     args:
+      #       - apk update && apk add rsync && rsync -avz -e "ssh -i /etc/ssh/rsync-key" root@127.0.0.1:/mnt/volume_sgp1_04/teafiles_bak /app-volume
+      #     volumeMounts:
+      #       - name: app-volume
+      #         mountPath: /app-volume
+      #       - name: ssh-key
+      #         mountPath: /etc/ssh/rsync-key
+      #         subPath: rsync-key
+      #     envFrom:
+      #       - secretRef:
+      #           name: rsync-private-key
       containers:
         - name: teafiles-service
           image: nami/teafiles-service:latest
           imagePullPolicy: Never
           ports:
-            - containerPort: 3005  # Thay đổi cổng nếu cần
+            - containerPort: 3005
           envFrom:
             - configMapRef:
                 name: teafiles-service-config
-          volumeMounts:
-            - name: app-volume
-              mountPath: /app-volume
-        - name: rsync-container
-          image: ubuntu:latest  # Hoặc hình ảnh chứa rsync
-          command: ["sh", "-c", "rsync -avz user@remote-server:/path/to/data /app"]
           volumeMounts:
             - name: app-volume
               mountPath: /app-volume
@@ -34,6 +43,9 @@ spec:
         - name: app-volume
           persistentVolumeClaim:
             claimName: teafiles-service-pvc
+      # - name: ssh-key
+      #   secret:
+      #     secretName: rsync-private-key  # Tên của Secret chứa SSH key
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -53,6 +65,40 @@ spec:
   resources:
     requests:
       storage: 5Gi  # Thay giá trị lưu trữ mong muốn
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rsync-backup
+spec:
+  schedule: "*/10 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: rsync-container
+              image: alpine:latest  # Hoặc hình ảnh chứa rsync
+              command: ["sh", "-c"]
+              args:
+                - apk update && apk add rsync && rsync -avz -e "ssh -i /etc/ssh/rsync-key" root@127.0.0.1:/mnt/volume_sgp1_04/teafiles_bak /app-volume
+              volumeMounts:
+                - name: app-volume
+                  mountPath: /app-volume
+                - name: ssh-key
+                  mountPath: /etc/ssh/rsync-key
+                  subPath: rsync-key
+              envFrom:
+                - secretRef:
+                    name: rsync-private-key
+          volumes:
+          - name: ssh-key
+            secret:
+              secretName: rsync-private-key  # Tên của Secret chứa SSH key
+          - name: app-volume
+            persistentVolumeClaim:
+              claimName: teafiles-service-pvc
+          restartPolicy: OnFailure
 ---
 apiVersion: v1
 kind: Service

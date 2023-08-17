@@ -39,3 +39,8 @@ kubectl get nodes -o wide
 minikube service teafiles-service
 kubectl get pods
 ```
+
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/rsync-key
+kubectl create secret generic rsync-private-key --from-file=rsync-key=/Users/neo/.ssh/rsync-key
+
+<!-- kubectl create secret generic rsync-private-key --from-file=ssh-privatekey=/Users/neo/.ssh/rsync-key --from-file=ssh-publickey=/Users/neo/.ssh/rsync-key.pub -->
