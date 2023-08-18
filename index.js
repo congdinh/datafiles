@@ -17,7 +17,7 @@ app.get("/api/v1/chart/history", cors(), (req, res) => {
 
   const data = teafilejs.get({
     symbol: "BTCVNDC",
-    broker: "FUTURES",
+    broker: "NAMI_FUTURES",
     interval: "1d",
     from: 0,
     to: 1694461860,
