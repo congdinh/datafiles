@@ -42,7 +42,7 @@ minikube service teafiles-service
 
 # Create secrets
 ssh-keygen -t rsa -b 4096 -f ~/.ssh/rsync-key
-kubectl create secret generic rsync-config --from-file=rsync-key=/Users/neo/.ssh/rsync-key --from-literal=remote-server=root@127.0.0.1
+kubectl --namespace=teafiles create secret generic rsync-config --from-file=rsync-key=/Users/neo/.ssh/rsync-key --from-literal=remote-server=root@127.0.0.1
 
 #kubectl create secret generic rsync-private-key --from-file=rsync-key=/Users/neo/.ssh/rsync-key
 kubectl delete secret rsync-private-key
